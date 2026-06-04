@@ -6,7 +6,7 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download && go mod verify
 COPY . .
-RUN go build -ldflags="-s -w -X main.Version=${BUILD_VERSION}" -o /server ./...
+RUN go build -ldflags="-s -w -X main.Version=${BUILD_VERSION}" -o /server .
 
 # ── Runtime ────────────────────────────────────────────────────────────────────
 FROM gcr.io/distroless/static-debian12
