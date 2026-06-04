@@ -151,8 +151,7 @@ jobs:
       - name: Health check
         run: |
           for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' \
-              "http://${{ secrets.ALB_DNS_NAME }}/health")
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "http://${{ secrets.ALB_DNS_NAME }}/health")
             [ "$STATUS" -eq 200 ] && { echo "Health check passed"; exit 0; }
             echo "Attempt $i: HTTP $STATUS"
             sleep 15
