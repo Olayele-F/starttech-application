@@ -27,7 +27,10 @@ CURRENT_VERSION=$(aws autoscaling describe-auto-scaling-groups \
 
 log "Current launch template version: $CURRENT_VERSION"
 
-if [[ "$CURRENT_VERSION" -gt 1 ]]; then
+if [[ "$CURRENT_VERSION" == "\$Latest" || "$CURRENT_VERSION" == "Latest" ]]; then
+  log "Launch template using \$Latest — cannot determine previous version, skipping rollback"
+  exit 0
+elif [[ "$CURRENT_VERSION" -gt 1 ]]; then
   PREV=$((CURRENT_VERSION - 1))
   log "Rolling back to launch template version $PREV..."
   aws autoscaling start-instance-refresh \
