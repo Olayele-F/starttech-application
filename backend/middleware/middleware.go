@@ -77,7 +77,7 @@ func Recovery(next http.Handler) http.Handler {
 		defer func() {
 			if rec := recover(); rec != nil {
 				log.Printf(`{"level":"ERROR","panic":"%v","stack":"%s"}`,
-					rec, strings.ReplaceAll(fmt.Sprintf("%s", debug.Stack()), "\n", "\\n"))
+					rec, strings.ReplaceAll(string(debug.Stack()), "\n", "\\n"))
 				http.Error(w, `{"error":"internal server error"}`, http.StatusInternalServerError)
 			}
 		}()
