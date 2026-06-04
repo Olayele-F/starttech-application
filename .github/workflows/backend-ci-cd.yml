@@ -95,8 +95,6 @@ jobs:
           context: backend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-
-
           build-args: BUILD_VERSION=${{ github.sha }}
 
       - name: Trivy vulnerability scan
