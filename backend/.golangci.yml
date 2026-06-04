@@ -1,0 +1,13 @@
+﻿linters:
+  disable:
+    - gosec
+
+linters-settings:
+  govet:
+    enable-all: false
+
+issues:
+  exclude-rules:
+    - linters:
+        - gosec
+      text: "G104|G304|G307|G401|G501"
