@@ -64,3 +64,5 @@ func main() {
 		log.Fatalf("forced shutdown: %v", err)
 	}
 }
+
+# This is a basic Go web server with graceful shutdown and middleware for logging, CORS, and recovery. It includes health and readiness endpoints, as well as simple CRUD handlers for items.
