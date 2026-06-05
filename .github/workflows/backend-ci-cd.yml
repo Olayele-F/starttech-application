@@ -149,14 +149,16 @@ jobs:
           echo "Timeout"; exit 1
 
       - name: Health check
+        env:
+          ALB_DNS: ${{ secrets.ALB_DNS_NAME }}
         run: |
-           for i in {1..5}; do
-            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "http://${{ secrets.ALB_DNS_NAME }}/health")
+          for i in {1..5}; do
+            STATUS=$(curl -s -o /dev/null -w '%{http_code}' "http://${ALB_DNS}/health")
             [ "$STATUS" -eq 200 ] && { echo "Health check passed"; exit 0; }
             echo "Attempt $i: HTTP $STATUS"
             sleep 15
-           done
-           exit 1
+          done
+          exit 1
 
       - name: Rollback on failure
         if: failure()
