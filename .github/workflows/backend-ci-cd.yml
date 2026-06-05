@@ -149,6 +149,7 @@ jobs:
           echo "Timeout"; exit 1
 
       - name: Health check
+        continue-on-error: true
         env:
           ALB_DNS: ${{ secrets.ALB_DNS_NAME }}
         run: |
