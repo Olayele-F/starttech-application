@@ -46,7 +46,7 @@ jobs:
         run: npm run build
         env:
           REACT_APP_API_URL: ${{ secrets.REACT_APP_API_URL }}
-          REACT_APP_ENV:     production
+          REACT_APP_ENV: production
           CI: false
 
       - name: Upload build artifact
@@ -73,37 +73,34 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id:     ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region:            ${{ env.AWS_REGION }}
+          aws-region: ${{ env.AWS_REGION }}
 
       - name: Sync to S3 (hashed assets — long cache)
-        run: |
-          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} \
-            --delete \
-            --cache-control "public,max-age=31536000,immutable" \
-            --exclude "index.html" --exclude "*.json"
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
+        run: aws s3 sync build/ s3://${S3_BUCKET} --delete --cache-control "public,max-age=31536000,immutable" --exclude "index.html" --exclude "*.json"
 
       - name: Sync to S3 (entry points — no cache)
+        env:
+          S3_BUCKET: ${{ secrets.S3_BUCKET_NAME }}
         run: |
-          aws s3 cp build/index.html s3://${{ secrets.S3_BUCKET_NAME }}/index.html \
-            --cache-control "no-cache,no-store,must-revalidate"
-          aws s3 sync build/ s3://${{ secrets.S3_BUCKET_NAME }} \
-            --exclude "*" --include "*.json" --cache-control "no-cache"
+          aws s3 cp build/index.html s3://${S3_BUCKET}/index.html --cache-control "no-cache,no-store,must-revalidate"
+          aws s3 sync build/ s3://${S3_BUCKET} --exclude "*" --include "*.json" --cache-control "no-cache"
 
       - name: Invalidate CloudFront
+        env:
+          CF_DIST_ID: ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }}
         run: |
-          INV_ID=$(aws cloudfront create-invalidation \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --paths "/*" --query 'Invalidation.Id' --output text)
+          INV_ID=$(aws cloudfront create-invalidation --distribution-id ${CF_DIST_ID} --paths "/*" --query 'Invalidation.Id' --output text)
           echo "Invalidation: $INV_ID"
-          aws cloudfront wait invalidation-completed \
-            --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} \
-            --id "$INV_ID"
+          aws cloudfront wait invalidation-completed --distribution-id ${CF_DIST_ID} --id "$INV_ID"
 
       - name: Smoke test
+        env:
+          CF_DOMAIN: ${{ secrets.CLOUDFRONT_DOMAIN }}
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "https://${{ secrets.CLOUDFRONT_DOMAIN }}")
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' "https://${CF_DOMAIN}")
           [ "$STATUS" -eq 200 ] || { echo "Smoke test failed: $STATUS"; exit 1; }
           echo "Smoke test passed: HTTP $STATUS"
